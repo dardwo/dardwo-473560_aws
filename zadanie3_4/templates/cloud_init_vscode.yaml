@@ -1,0 +1,18 @@
+#cloud-config
+package_update: true
+packages:
+  - docker.io
+
+runcmd:
+  # 1. Tworzenie katalogów
+  - mkdir -p /home/code-server-data/config
+  - mkdir -p /home/code-server-data/project
+  
+  # 2. Uprawnienia
+  - chown -R 1000:1000 /home/code-server-data
+  
+  # 3. Czekamy na Dockera
+  - sh -c 'until docker info; do echo "Czekam..."; sleep 5; done'
+
+  # 4. URUCHOMIENIE
+  - docker run -d --name=code-server --restart=unless-stopped -e PUID=1000 -e PGID=1000 -e TZ=Europe/Warsaw -e PASSWORD=student -e SUDO_PASSWORD=student -p 8080:8443 -v /home/code-server-data/config:/config -v /home/code-server-data/project:/config/workspace lscr.io/linuxserver/code-server:latest
